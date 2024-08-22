@@ -1,17 +1,20 @@
+// Adjaceency List to represent graph of all chess board moves by knight piece
 class AdjacencyList {
+  // Initialize with empty 'list' object
   constructor() {
     this.list = {};
   }
-
+  // method to add possible moves for a given starting square to the 'list'
   addSquare(square) {
     this.list[square] = getPossibleMoves(square);
   }
-
+  // return a given square/position's possible moves
   getMove(square) {
     return this.list[square];
   }
 }
 
+// Function to generate all valid moves given a square/position on the board
 const getPossibleMoves = (square) => {
   const [row, col] = square;
   const possibleMoves = [];
@@ -26,6 +29,7 @@ const getPossibleMoves = (square) => {
     [-1, -2],
   ];
 
+  // Generate all moves for the knight then filter if it is valid
   allMoves.forEach(([x, y]) => {
     const newRow = row + x;
     const newCol = col + y;
@@ -36,10 +40,8 @@ const getPossibleMoves = (square) => {
 
   return possibleMoves;
 };
-console.log("[0, 0] possiblemoves -> ", getPossibleMoves([0, 0]));
 
-console.log("[1, 2] possiblemoves -> ", getPossibleMoves([1, 2]));
-
+// Method to create complete graph for all squares of chess board and their possible moves
 const buildAdjacencyList = () => {
   const graph = new AdjacencyList();
   for (let i = 0; i < 8; i++) {
@@ -50,81 +52,66 @@ const buildAdjacencyList = () => {
   return graph;
 };
 
-const boardGraph = buildAdjacencyList();
-// console.log(boardGraph);
-
-// const knightTravails = (start, end) => {
-//   const [start_row, start_col] = start;
-//   const [end_row, end_col] = end;
-//   let visited = [];
-//   let queue = [];
-//   queue.push([start_row, start_col]);
-
-//   // while (queue.length > 0) {
-//   const visitedSquare = queue.shift();
-//   console.log("Visitied: ", visitedSquare);
-//   visited.push(visitedSquare);
-//   const [visited_row, visited_col] = visitedSquare;
-//   const nextMoves = boardGraph.getMove(visitedSquare);
-//   nextMoves.forEach((move) => {
-//     const [next_row, next_col] = move;
-//     if (next_row === end_row && next_col === end_col) {
-//       console.log("found end: ", move);
-//       return;
-//     } else {
-//       if (!visited.includes([next_row, next_col])) {
-//         visited.push(move);
-//         queue.push(move);
-//       }
-//     }
-//   });
-
-//   console.log("queue", queue);
-//   // }
-// };
-
-// // knightTravails([0, 0], [1, 2]);
-
-const knightTravails = (start, end) => {
+// Return shortest path a knight can traverse given a start and end position
+const knightMoves = (start, end) => {
+  // Initialize graph, parentMap, visited, queue
   const graph = buildAdjacencyList();
   let parentMap = {};
-  let visited = [start.toString()];
+  // Visitied represents squares of the board that have been traversed
+  let visited = [start];
+  // queue is a list of paths
   let queue = [[start]];
 
   const [end_row, end_col] = end;
 
   while (queue.length > 0) {
+    // Dequeue first path of queue
     const path = queue.shift();
+    // Extract last square in the path
     const currentSquare = path[path.length - 1];
 
     const [curr_row, curr_col] = currentSquare;
-
+    // Check if current sqaure is the same as end position
     if (curr_row === end_row && curr_col === end_col) {
-      console.log("found end: ", currentSquare);
       return buildPath(start, end, parentMap);
     }
 
+    // Get possibleMoves of current square
     const nextMoves = graph.getMove(currentSquare);
+    // For each possible move, check if it has not been visited (avoid cycles)
     nextMoves.forEach((move) => {
-      if (!visited.includes(move.toString())) {
-        visited.push(move.toString());
+      if (!visited.some((v) => v[0] === move[0] && v[1] === move[1])) {
+        // Add non visitied move to visited list
+        visited.push(move);
+        // Add copy of path followed by curent move to the queue
         queue.push([...path, move]);
-        parentMap[move.toString()] = currentSquare.toString();
+        // Map the current move to its parent square (previous move)
+        parentMap[move.toString()] = currentSquare;
       }
     });
   }
   return "No Path Found";
 };
 
+// Method to construct path taken from start to end
 const buildPath = (start, end, parentMap) => {
+  // initialize
   let path = [];
-
+  // While end and start are not equal in value, add the end position to path
+  // Then update end to be its parent or previous square
   while (end.toString() !== start.toString()) {
     path.push(end);
     end = parentMap[end.toString()];
   }
+  // Add start to the path
   path.push(start);
+  // Reverse order of path
   return path.reverse();
 };
 
-console.log("Shortest Path", knightTravails([0, 0], [3, 4]));
+let output = knightMoves([0, 0], [7, 0]);
+
+console.log(
+  `You made it in ${output.length} moves!  Here's your path: `,
+  output
+);
