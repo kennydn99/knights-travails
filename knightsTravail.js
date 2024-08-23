@@ -110,8 +110,6 @@ const buildPath = (start, end, parentMap) => {
 };
 
 let output = knightMoves([0, 0], [7, 0]);
-
-console.log(
-  `You made it in ${output.length} moves!  Here's your path: `,
-  output
-);
+console.log("knightMoves([0, 0], [7, 0])");
+console.log(`You made it in ${output.length} moves!  Here's your path:`);
+output.forEach((step) => console.log(step));
